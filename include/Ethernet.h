@@ -24,6 +24,8 @@ private:
     static fnet_mutex_api_t _mutex_api;
     static fnet_timer_api_t _timer_api;
 
+    static bool _connected;
+
     static void link_state__callback(fnet_netif_desc_t netif, fnet_bool_t connected, void* callback_param);
     static void dhcp__callback(fnet_dhcp_cln_desc_t desc, fnet_netif_desc_t netif, void* callback_param);
 };

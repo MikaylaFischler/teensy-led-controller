@@ -13,6 +13,8 @@ uint8_t* Ethernet::_fnet_heap;
 fnet_mutex_api_t Ethernet::_mutex_api;
 fnet_timer_api_t Ethernet::_timer_api;
 
+bool Ethernet::_connected = false;
+
 // unimplemented mutex functions
 fnet_return_t eth_mutex_init(fnet_mutex_t* mutex) { return FNET_OK; }
 void eth_mutex_release(fnet_mutex_t* mutex) {}
@@ -110,7 +112,7 @@ uint8_t Ethernet::req_ip() {
  * @param callback_param Optional callback parameter
  */
 void Ethernet::link_state__callback(fnet_netif_desc_t netif, fnet_bool_t connected, void* callback_param) {
-    if (connected) {
+    if ((_connected = connected)) {
         Serial.println("[ETH] connected");
     } else {
         Serial.println("[ETH] disconnected");
