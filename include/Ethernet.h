@@ -6,7 +6,7 @@
 
 #define ETH_DRIVER_VERSION "0.1.0"
 
-#define FNET_NET_HEAP_SIZE 64 * 1024u
+#define FNET_NET_HEAP_SIZE 64 * 1024U
 
 class Ethernet {
 public:
