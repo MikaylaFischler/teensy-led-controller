@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <fnet.h>
 
+#define ETH_DRIVER_VERSION "0.1.0"
+
 #define FNET_NET_HEAP_SIZE 64 * 1024u
 
 class Ethernet {
