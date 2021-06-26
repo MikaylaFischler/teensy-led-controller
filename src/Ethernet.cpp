@@ -19,9 +19,6 @@ void eth_mutex_release(fnet_mutex_t* mutex) {}
 void eth_mutex_lock(fnet_mutex_t* mutex) {}
 void eth_mutex_unlock(fnet_mutex_t* mutex) {}
 
-// callbacks
-void eth_link_callback(fnet_netif_desc_t netif, fnet_bool_t connected, void* callback_param) {}
-
 /**
  * @brief Initialize the ethernet interface.
  * @return uint8_t 0 on success, non-zero on failure
@@ -69,21 +66,21 @@ uint8_t Ethernet::init(uint8_t* mac_addr) {
     if (fnet_netif_init(_iface, mac_addr, 6) == FNET_OK) {
         fnet_link_params_t link_params = {
             .netif_desc     = _iface,
-            .callback       = eth_link_callback,
+            .callback       = &link_state__callback,
             .callback_param = NULL
         };
         
-        // .....LINK START!
+        // start link detection service
         _link = fnet_link_init(&link_params);
 
         // start service poll for 10ms
         _service_poll.begin(fnet_service_poll, 10000);
 
         Serial.println("[ETH:OK] completed initialization");
-
         return 0;
     }
 
+    Serial.println("[ETH:FAIL] failed initialization");
     return -1;
 }
 
@@ -97,7 +94,7 @@ uint8_t Ethernet::req_ip() {
     fnet_memset_zero(&dhcp_params, sizeof(dhcp_params));
     dhcp_params.netif = _iface;
 
-    if (_dhclient = fnet_dhcp_cln_init(&dhcp_params)) {
+    if ((_dhclient = fnet_dhcp_cln_init(&dhcp_params))) {
         fnet_dhcp_cln_set_callback_updated(_dhclient, &dhcp__callback, NULL);
         return 0;
     } else {
@@ -107,12 +104,26 @@ uint8_t Ethernet::req_ip() {
 }
 
 /**
+ * @brief Callback for link detection service.
+ * @param netif Network interface
+ * @param connected Connected state
+ * @param callback_param Optional callback parameter
+ */
+void Ethernet::link_state__callback(fnet_netif_desc_t netif, fnet_bool_t connected, void* callback_param) {
+    if (connected) {
+        Serial.println("[ETH] connected");
+    } else {
+        Serial.println("[ETH] disconnected");
+    }
+}
+
+/**
  * @brief Callback for DHCP server assignment response.
  * @param desc Client handle
  * @param netif Interface
- * @param cookie Cookie
+ * @param callback_param Optional callback parameter
  */
-void Ethernet::dhcp__callback(fnet_dhcp_cln_desc_t desc, fnet_netif_desc_t netif, void* cookie) {
+void Ethernet::dhcp__callback(fnet_dhcp_cln_desc_t desc, fnet_netif_desc_t netif, void* callback_param) {
     Serial.println("[ETH:OK] DHCP answered");
     fnet_dhcp_cln_get_options(_dhclient, &_dhopts);
 
