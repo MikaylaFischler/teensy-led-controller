@@ -1,13 +1,21 @@
 #include <Arduino.h>
+
 #include "Ethernet.h"
 
+uint8_t MAC[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
+
 void setup() {
-  // put your setup code here, to run once:
-  pinMode(13, HIGH);
+    pinMode(13, HIGH);
+
+    delay(5000);
+
+    Serial.begin(115200);
+
+    Ethernet::init(MAC);
+    Ethernet::req_ip();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  digitalToggle(13);
-  delay(500);
+    digitalToggle(13);
+    delay(500);
 }
