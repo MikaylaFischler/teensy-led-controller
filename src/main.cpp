@@ -13,7 +13,7 @@ void setup() {
 
     // Initialize Serial Logging //
     Logger::init(&Serial);
-    tlc_println("delaying startup...");
+    tlc_println("[TLC] delaying startup...");
     delay(5000);
 
     digitalWrite(13, HIGH);
@@ -23,7 +23,7 @@ void setup() {
     Ethernet::init(MAC);
     Ethernet::req_ip();
 
-    tlc_println("startup completed");
+    tlc_println("[TLC] startup completed");
 }
 
 void loop() {

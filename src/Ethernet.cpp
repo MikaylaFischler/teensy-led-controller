@@ -1,4 +1,5 @@
 #include "Ethernet.h"
+#include "Logger.h"
 
 fnet_netif_desc_t     Ethernet::_iface;
 fnet_link_desc_t      Ethernet::_link;
@@ -34,8 +35,7 @@ uint8_t Ethernet::init(uint8_t* mac_addr) {
         return 0;
     }
 
-    Serial.print("[ETH] init fnet v");
-    Serial.println(FNET_VERSION);
+    tlc_println("[ETH] init fnet v" FNET_VERSION);
 
     struct fnet_init_params init_params;
 
@@ -78,11 +78,11 @@ uint8_t Ethernet::init(uint8_t* mac_addr) {
         // start service poll for 10ms
         _service_poll.begin(fnet_service_poll, 10000);
 
-        Serial.println("[ETH:OK] completed initialization");
+        tlc_println("[ETH:OK] completed initialization");
         return 0;
     }
 
-    Serial.println("[ETH:FAIL] failed initialization");
+    tlc_println("[ETH:FAIL] failed initialization");
     return -1;
 }
 
@@ -97,10 +97,11 @@ uint8_t Ethernet::req_ip() {
     dhcp_params.netif = _iface;
 
     if ((_dhclient = fnet_dhcp_cln_init(&dhcp_params))) {
+        tlc_println("[ETH] DHCP service requesting IP...");
         fnet_dhcp_cln_set_callback_updated(_dhclient, &dhcp__callback, NULL);
         return 0;
     } else {
-        Serial.println("[ETH:FAIL] DHCP initialization failed");
+        tlc_println("[ETH:FAIL] DHCP initialization failed");
         return -1;
     }
 }
@@ -113,9 +114,9 @@ uint8_t Ethernet::req_ip() {
  */
 void Ethernet::link_state__callback(fnet_netif_desc_t netif, fnet_bool_t connected, void* callback_param) {
     if ((_connected = connected)) {
-        Serial.println("[ETH] connected");
+        tlc_println("[ETH] connected");
     } else {
-        Serial.println("[ETH] disconnected");
+        tlc_println("[ETH] disconnected");
     }
 }
 
@@ -126,7 +127,7 @@ void Ethernet::link_state__callback(fnet_netif_desc_t netif, fnet_bool_t connect
  * @param callback_param Optional callback parameter
  */
 void Ethernet::dhcp__callback(fnet_dhcp_cln_desc_t desc, fnet_netif_desc_t netif, void* callback_param) {
-    Serial.println("[ETH:OK] DHCP answered");
+    tlc_println("[ETH:OK] DHCP answered");
     fnet_dhcp_cln_get_options(_dhclient, &_dhopts);
 
     char addr[FNET_IP4_ADDR_STR_SIZE];
@@ -134,8 +135,5 @@ void Ethernet::dhcp__callback(fnet_dhcp_cln_desc_t desc, fnet_netif_desc_t netif
     char mask[FNET_IP4_ADDR_STR_SIZE];
     fnet_inet_ntop(AF_INET, &_dhopts.netmask.s_addr, mask, FNET_IP4_ADDR_STR_SIZE);
 
-    Serial.print("[ETH] I am ");
-    Serial.print(addr);
-    Serial.print("/");
-    Serial.println(mask);
+    tlc_printf("[ETH] I am %s/%s\n", addr, mask);
 }
